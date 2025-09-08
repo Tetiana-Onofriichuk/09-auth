@@ -1,0 +1,61 @@
+/* ТЕМИ / ЗМІННІ */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  font-family: var(--font-roboto), sans-serif; /* підтягує Roboto з next/font */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* БАЗОВЕ ОФОРМЛЕННЯ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%; /* важливо для min-height на body */
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* штовхає футер вниз */
+  color: var(--foreground);
+  background: var(--background); /* використовуй змінну, не 'white' */
+  font-family: var(--font-roboto), sans-serif; /* не перезаписуй Arial */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ГОЛОВНИЙ КОНТЕНТ РОЗТЯГУЄТЬСЯ */
+main {
+  flex: 1;
+}
+
+/* ЗРУЧНІ ДРІБНИЦІ */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
+
+/* (опціонально) якщо футер має тінь/фіксовану висоту — невеликий відступ знизу у контенту */
+.notes-list,
+.app {
+  padding-bottom: 80px; /* при необхідності: висота футера + запас */
+}
