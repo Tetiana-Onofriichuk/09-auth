@@ -4,7 +4,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import NotesClient from "./Notes.client";
-import { fetchNotes } from "@/lib/api";
+import { fetchNotes } from "@/lib/clientApi";
 import { CATEGORIES, type Category, type CategoryNoAll } from "@/types/note";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
