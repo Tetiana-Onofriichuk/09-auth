@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { FetchNotes, nextServer } from "./api";
-import { User } from "@/types/note";
+import { User } from "@/types/user";
 import { SortBy, Tags } from "./clientApi";
 import { Note } from "@/types/note";
 

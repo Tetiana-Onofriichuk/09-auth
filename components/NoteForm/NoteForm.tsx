@@ -1,162 +1,163 @@
 "use client";
 
 import css from "./NoteForm.module.css";
-import type { Tag } from "@/types/note";
+import * as Yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote } from "@/lib/api";
-import { useRouter, usePathname } from "next/navigation";
-import { useNoteDraftStore } from "@/lib/store/noteStore";
-import { useEffect, useMemo, useState } from "react";
+import { createNote, getCategories, Tags } from "@/lib/clientApi";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { NewNoteData, useNoteDraftStore } from "@/lib/store/noteStore";
+import Form from "next/form";
+import { useEffect, useState } from "react";
+import { Routes } from "@/types/note";
 
-export interface NoteFormValues {
-  title: string;
-  content: string;
-  tag: Tag;
-}
-
-interface NoteFormProps {
-  initialValues?: NoteFormValues;
-  onCancel?: () => void;
-}
-
-const TAGS: readonly Tag[] = [
-  "Todo",
-  "Work",
-  "Personal",
-  "Meeting",
-  "Shopping",
-] as const;
-const DEFAULTS: NoteFormValues = { title: "", content: "", tag: "Todo" };
-
-export default function NoteForm({ initialValues, onCancel }: NoteFormProps) {
+export default function NoteForm() {
   const router = useRouter();
-  const pathname = usePathname();
-  const isCreate = pathname === "/notes/action/create";
-
-  const draft = useNoteDraftStore((s) => s.draft);
-  const setDraft = useNoteDraftStore((s) => s.setDraft);
-  const clearDraft = useNoteDraftStore((s) => s.clearDraft);
-
-  const [local, setLocal] = useState<NoteFormValues>(initialValues ?? DEFAULTS);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { draft, setDraft, clearDraft } = useNoteDraftStore();
+  const [categories, setCategories] = useState<Tags>(Tags);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!isCreate && initialValues) setLocal(initialValues);
-  }, [isCreate, initialValues]);
+    const fetchCategories = async () => {
+      const data = await getCategories();
+      setCategories(data);
+    };
+    fetchCategories();
+  }, []);
 
-  const values: NoteFormValues = useMemo(
-    () => (isCreate ? draft : local),
-    [isCreate, draft, local]
-  );
-
-  const handleCancel =
-    onCancel ??
-    (() => {
-      if (isCreate) router.back();
-      else router.push("/notes");
+  const handleChange = (
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    setDraft({
+      ...draft,
+      [event.target.name]: event.target.value,
     });
-
-  const update = (patch: Partial<NoteFormValues>) => {
-    if (isCreate) setDraft({ ...draft, ...patch });
-    else setLocal((prev) => ({ ...prev, ...patch }));
   };
 
+  const onCancel = () => {
+    router.push(Routes.NotesFilter + "All");
+  };
+
+  const formScheme = Yup.object().shape({
+    title: Yup.string()
+      .min(3, "Title must be at least 3 characters")
+      .max(50, "Title must be less or equal to 50 characters")
+      .required("Title is required"),
+    content: Yup.string()
+      .max(500, "Content must be less or equal to 500 characters")
+      .default(""),
+    tag: Yup.string().oneOf(categories).default("Todo"),
+  });
+
   const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: (newNote: NoteFormValues) => createNote(newNote),
+
+  const { mutate } = useMutation({
+    mutationFn: createNote,
     onSuccess: () => {
+      clearDraft();
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+      router.push(Routes.NotesFilter + "All");
+      toast.success("Note has been successfully created!");
+    },
+    onError: () => {
+      toast.error("Error occured while creating note!");
+    },
+    onSettled: () => {
+      setIsLoading(false);
     },
   });
 
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault();
-
-    const title = values.title.trim();
-    const content = values.content ?? "";
-    const tag = values.tag;
-
-    if (title.length < 3 || title.length > 50) return;
-    if (content.length > 500) return;
-    if (!TAGS.includes(tag)) return;
-
-    mutation.mutate(
-      { title, content, tag },
-      {
-        onSuccess: () => {
-          clearDraft();
-
-          router.back();
-        },
+  const onFormSubmit = async (formData: FormData) => {
+    setIsLoading(true);
+    try {
+      const values = Object.fromEntries(formData) as unknown as NewNoteData;
+      const validatedValues = await formScheme.validate(values, {
+        abortEarly: false,
+      });
+      setErrors({});
+      mutate(validatedValues);
+    } catch (errors) {
+      if (errors instanceof Yup.ValidationError) {
+        const newErrors: Record<string, string> = {};
+        errors.inner.forEach((error) => {
+          if (error.path) newErrors[error.path] = error.message;
+        });
+        setErrors(newErrors);
       }
-    );
+      setIsLoading(false);
+    }
   };
 
   return (
-    <form className={css.form} onSubmit={handleSubmit}>
+    <Form action={onFormSubmit} className={css.form}>
+      {/* Примітивний індикатор завантаження */}
+      {isLoading && <div className={css.loader}>Loading…</div>}
+
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
-          id="title"
-          name="title"
           type="text"
+          name="title"
+          id="title"
+          defaultValue={draft.title}
+          onChange={handleChange}
           className={css.input}
-          value={values.title}
-          onChange={(e) => update({ title: e.target.value })}
-          required
-          minLength={3}
-          maxLength={50}
+          disabled={isLoading}
         />
+        {errors?.title && <span className={css.error}>{errors.title}</span>}
       </div>
 
       <div className={css.formGroup}>
         <label htmlFor="content">Content</label>
         <textarea
-          id="content"
           name="content"
+          id="content"
           rows={8}
+          defaultValue={draft.content}
+          onChange={handleChange}
           className={css.textarea}
-          value={values.content}
-          onChange={(e) => update({ content: e.target.value })}
-          maxLength={500}
+          disabled={isLoading}
         />
+        {errors?.content && <span className={css.error}>{errors.content}</span>}
       </div>
 
       <div className={css.formGroup}>
         <label htmlFor="tag">Tag</label>
         <select
-          id="tag"
           name="tag"
+          id="tag"
           className={css.select}
-          value={values.tag}
-          onChange={(e) => update({ tag: e.target.value as Tag })}
-          required
+          value={draft.tag}
+          onChange={handleChange}
+          disabled={isLoading}
         >
-          {TAGS.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
+          {categories
+            .filter((tag) => tag !== "All")
+            .map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
         </select>
+        {errors?.tag && <span className={css.error}>{errors.tag}</span>}
       </div>
 
       <div className={css.actions}>
         <button
           type="button"
           className={css.cancelButton}
-          onClick={handleCancel}
-          disabled={mutation.isPending}
+          onClick={onCancel}
+          disabled={isLoading}
         >
           Cancel
         </button>
-
-        <button
-          className={css.submitButton}
-          disabled={mutation.isPending}
-          type="submit"
-        >
-          {mutation.isPending ? "Creating..." : "Create note"}
+        <button type="submit" className={css.submitButton} disabled={isLoading}>
+          {isLoading ? "Creating…" : "Create note"}
         </button>
       </div>
-    </form>
+    </Form>
   );
 }

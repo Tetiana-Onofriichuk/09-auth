@@ -71,3 +71,9 @@
   font-size: 12px;
   margin-top: 4px;
 }
+
+.loader {
+  margin-bottom: 12px;
+  font-size: 14px;
+  opacity: 0.8;
+}
