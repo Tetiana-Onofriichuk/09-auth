@@ -11,7 +11,7 @@ import SearchBox from "@/components/SearchBox/SearchBox";
 import { type CategoryNoAll } from "@/types/note";
 
 type NotesClientProps = {
-  tag?: CategoryNoAll;
+  tag?: CategoryNoAll; // без "All"
 };
 
 const PER_PAGE = 8;
@@ -21,6 +21,7 @@ export default function NotesClient({ tag }: NotesClientProps) {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
 
+  // Дебаунс пошуку + ресет сторінки при зміні тегу
   useEffect(() => {
     const t = setTimeout(() => {
       setSearch(searchInput.trim());
@@ -34,7 +35,8 @@ export default function NotesClient({ tag }: NotesClientProps) {
       "notes",
       { page: currentPage, perPage: PER_PAGE, search, tag: tag ?? null },
     ],
-    queryFn: () => fetchNotes(currentPage, PER_PAGE, search || undefined, tag),
+    queryFn: () =>
+      fetchNotes(currentPage, PER_PAGE, search || undefined, tag ?? null),
     placeholderData: keepPreviousData,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
@@ -43,8 +45,8 @@ export default function NotesClient({ tag }: NotesClientProps) {
   });
 
   const notes = data?.notes ?? [];
-  const hasResults = notes.length > 0;
   const totalPages = data?.totalPages ?? 1;
+  const hasResults = notes.length > 0;
 
   return (
     <div className={css.app}>

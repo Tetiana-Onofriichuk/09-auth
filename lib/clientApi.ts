@@ -12,7 +12,6 @@ export const Tags = [
 ] as const;
 
 export type Tags = typeof Tags;
-
 export type SortBy = "created" | "updated";
 
 export type RegisterRequest = {
@@ -36,21 +35,22 @@ type CheckSessionRequest = {
 };
 
 export const fetchNotes = async (
-  search: string,
-  page: number = 1,
+  page: number,
   perPage: number = 10,
-  tag?: Exclude<Tags[number], "All">,
+  search?: string,
+  tag?: Exclude<Tags[number], "All"> | null,
   sortBy?: SortBy
 ) => {
-  const { data } = await nextServer.get<FetchNotes>("notes", {
-    params: {
-      search,
-      page,
-      perPage,
-      tag,
-      sortBy,
-    },
-  });
+  const params: Record<string, string | number> = {
+    page,
+    perPage,
+  };
+  if (search) params.search = search;
+  if (tag) params.tag = tag;
+
+  if (sortBy) params.sortBy = sortBy;
+
+  const { data } = await nextServer.get<FetchNotes>("notes", { params });
   return data;
 };
 
@@ -75,6 +75,7 @@ export const deleteNote = async (id: string) => {
 };
 
 export const getCategories = async () => {
+  // якщо бек повертає масив рядків — теж ок
   const { data } = await nextServer.get<Tags>("categories");
   return data;
 };
@@ -105,5 +106,5 @@ export const editMe = async (userData: EditRequest) => {
 };
 
 export const logout = async () => {
-  await nextServer.post<Promise<void>>("auth/logout");
+  await nextServer.post("auth/logout");
 };
