@@ -1,9 +1,9 @@
-// components/Header/Header.tsx
 "use client";
 
 import Link from "next/link";
 import css from "./Header.module.css";
 import TagsMenu from "@/components/TagsMenu/TagsMenu";
+import AuthNavigation from "@/components/AuthNavigation/AuthNavigation";
 
 export default function Header() {
   return (
@@ -17,9 +17,12 @@ export default function Header() {
           <li>
             <Link href="/">Home</Link>
           </li>
+
           <li>
             <TagsMenu />
-          </li>{" "}
+          </li>
+
+          <AuthNavigation />
         </ul>
       </nav>
     </header>
