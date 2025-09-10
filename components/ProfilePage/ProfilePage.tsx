@@ -1,6 +1,6 @@
 "use client";
 
-import css from "./Profile.module.css";
+import css from "./ProfilePage.module.css";
 
 export default function Profile() {
   return (
