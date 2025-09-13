@@ -2,7 +2,7 @@
 
 import { ApiError } from "@/app/api/api";
 import { Routes } from "@/types/note";
-import { login, RegisterRequest } from "@/lib/clientApi";
+import { login, RegisterRequest } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import Form from "next/form";
 import { useRouter } from "next/navigation";

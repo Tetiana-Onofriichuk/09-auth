@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Routes } from "./types/note";
 import { cookies } from "next/headers";
-import { checkServerSession } from "./lib/serverApi";
+import { checkServerSession } from "./lib/api/serverApi";
 import { parse } from "cookie";
 
 const publicRoutes = ["/sign-in", "/sign-up"];
