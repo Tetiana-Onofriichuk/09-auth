@@ -1,4 +1,3 @@
-// components/ProfilePage/ProfilePage.tsx
 "use client";
 
 import Image from "next/image";
