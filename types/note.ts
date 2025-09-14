@@ -23,6 +23,12 @@ export const CATEGORIES = [
 export type Category = (typeof CATEGORIES)[number];
 export type CategoryNoAll = Exclude<Category, "All">;
 
+export interface NewNoteData {
+  title: string;
+  content?: string;
+  tag: NoteTag;
+}
+
 export const enum Routes {
   Home = "/",
   NoteDetails = "/notes/",

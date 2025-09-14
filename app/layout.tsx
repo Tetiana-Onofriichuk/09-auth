@@ -1,19 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Roboto } from "next/font/google";
+import { Roboto } from "next/font/google";
+
 import "./globals.css";
-import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -23,22 +15,22 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "NoteHub",
-  description: "Write, organize, and store your notes with ease.",
+  title: "Welcome to NoteHub",
+  description:
+    "NoteHub helps you quickly organize and access your personal notes anytime, anywhere.",
   openGraph: {
-    title: `NoteHub`,
-    description: "Write, organize, and store your notes with ease.",
-    url: `https://08-zustand-phi-three.vercel.app/`,
-    siteName: "NoteHub",
+    title: "Welcome to NoteHub",
+    description:
+      "Quickly organize and access your personal notes anytime, anywhere.",
+    url: "https://09-auth-mu-nine.vercel.app/",
     images: [
       {
         url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
         width: 1200,
         height: 630,
-        alt: "Notehub",
+        alt: "NoteHub Open Graph Image",
       },
     ],
-    type: "website",
   },
 };
 
@@ -51,16 +43,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${roboto.variable}${geistSans.variable} ${geistMono.variable}`}
-      >
+      <body className={roboto.variable}>
         <TanStackProvider>
-          <Header />
-          <main>
-            {children}
-            {modal}
-          </main>
-          <Footer />
+          <AuthProvider>
+            <Header />
+
+            <main>
+              {children}
+              {modal}
+            </main>
+
+            <Footer />
+          </AuthProvider>
         </TanStackProvider>
       </body>
     </html>

@@ -1,45 +1,44 @@
 "use client";
 
-import { ApiError } from "@/app/api/api";
-import { Routes } from "@/types/note";
-import { login, RegisterRequest } from "@/lib/api/clientApi";
-import { useAuthStore } from "@/lib/store/authStore";
-import Form from "next/form";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import css from "./SignUp.module.css";
-import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import css from "./SignUpPage.module.css";
+import { register, RegisterRequest } from "@/lib/api/clientApi";
+import { ApiError } from "@/app/api/api";
+import { useAuthStore } from "@/lib/store/authStore";
 
-const SignIn = () => {
+export default function SignUp() {
   const router = useRouter();
   const [error, setError] = useState("");
   const setUser = useAuthStore((state) => state.setUser);
 
   const handleSubmit = async (formData: FormData) => {
-    setError("");
     try {
-      const formValues = Object.fromEntries(formData) as RegisterRequest;
-      const response = await login(formValues);
-      if (response) {
-        setUser(response);
-        toast.success("You have successfully logged in!");
-        router.push(Routes.Profile);
+      const formValues: RegisterRequest = {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+      };
+
+      const res = await register(formValues);
+      if (res) {
+        setUser(res);
+        router.push("/profile");
       } else {
         setError("Invalid email or password");
       }
-    } catch (e) {
-      const error = e as ApiError;
+    } catch (error) {
       setError(
-        error.response?.data?.error ?? error.message ?? "Oops... some error"
+        (error as ApiError).response?.data?.error ??
+          (error as ApiError).message ??
+          "Oops... some error"
       );
     }
   };
 
   return (
     <main className={css.mainContent}>
-      <Form className={css.form} action={handleSubmit}>
-        <h1 className={css.formTitle}>Sign in</h1>
-
+      <h1 className={css.formTitle}>Sign up</h1>
+      <form className={css.form} action={handleSubmit}>
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
@@ -64,14 +63,12 @@ const SignIn = () => {
 
         <div className={css.actions}>
           <button type="submit" className={css.submitButton}>
-            Log in
+            Register
           </button>
         </div>
 
         {error && <p className={css.error}>{error}</p>}
-      </Form>
+      </form>
     </main>
   );
-};
-
-export default SignIn;
+}
