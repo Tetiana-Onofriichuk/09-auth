@@ -2,7 +2,7 @@
 
 import { ApiError } from "@/app/api/api";
 import { Routes } from "@/types/note";
-import { login, RegisterRequest } from "@/lib/api/clientApi";
+import { login, type LoginRequest } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import Form from "next/form";
 import { useRouter } from "next/navigation";
@@ -18,8 +18,12 @@ const SignIn = () => {
   const handleSubmit = async (formData: FormData) => {
     setError("");
     try {
-      const formValues = Object.fromEntries(formData) as RegisterRequest;
-      const response = await login(formValues);
+      const values: LoginRequest = {
+        email: String(formData.get("email") ?? ""),
+        password: String(formData.get("password") ?? ""),
+      };
+
+      const response = await login(values);
       if (response) {
         setUser(response);
         toast.success("You have successfully logged in!");
@@ -28,9 +32,9 @@ const SignIn = () => {
         setError("Invalid email or password");
       }
     } catch (e) {
-      const error = e as ApiError;
+      const err = e as ApiError;
       setError(
-        error.response?.data?.error ?? error.message ?? "Oops... some error"
+        err.response?.data?.error ?? err.message ?? "Oops... some error"
       );
     }
   };
