@@ -17,7 +17,9 @@ export default function ProfilePage() {
     );
   }
 
-  const { username, email } = user as User;
+  const { username, email, avatar } = user as User;
+
+  const avatarSrc = avatar?.trim() ? avatar : "/images/avatar.png";
 
   return (
     <section className={css.wrapper}>
@@ -26,7 +28,7 @@ export default function ProfilePage() {
       <div className={css.card}>
         <div className={css.avatar}>
           <Image
-            src={avatarUrl || "/images/avatar.png"}
+            src={avatarSrc}
             alt={`${username}'s avatar`}
             width={120}
             height={120}
