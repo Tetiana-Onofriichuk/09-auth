@@ -4,41 +4,47 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import css from "./Notesclient.module.css";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api/clientApi";
+import { fetchNotes, type NotesHttpResponse } from "@/lib/api/clientApi";
 import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import { type CategoryNoAll } from "@/types/note";
 
 type NotesClientProps = {
-  tag?: CategoryNoAll; // без "All"
+  initialData: NotesHttpResponse;
+  initialTag?: CategoryNoAll;
 };
 
 const PER_PAGE = 8;
 
-export default function NotesClient({ tag }: NotesClientProps) {
+export default function NotesClient({
+  initialData,
+  initialTag,
+}: NotesClientProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [tag, setTag] = useState<CategoryNoAll | undefined>(initialTag);
 
-  // Дебаунс пошуку + ресет сторінки при зміні тегу
   useEffect(() => {
     const t = setTimeout(() => {
       setSearch(searchInput.trim());
       setCurrentPage(1);
     }, 500);
     return () => clearTimeout(t);
-  }, [searchInput, tag]);
+  }, [searchInput, initialTag]);
+
+  useEffect(() => {
+    setTag(initialTag);
+    setCurrentPage(1);
+  }, [initialTag]);
 
   const { data, isLoading, isError, isFetching } = useQuery({
-    queryKey: [
-      "notes",
-      { page: currentPage, perPage: PER_PAGE, search, tag: tag ?? null },
-    ],
-    queryFn: () =>
-      fetchNotes(currentPage, PER_PAGE, search || undefined, tag ?? null),
+    queryKey: ["notes", search, currentPage, tag ?? null],
+    queryFn: () => fetchNotes(search, currentPage, tag),
     placeholderData: keepPreviousData,
-    refetchOnMount: "always",
+    initialData,
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     staleTime: 30_000,
@@ -62,9 +68,9 @@ export default function NotesClient({ tag }: NotesClientProps) {
       </header>
 
       <main className="notes-list">
-        {isLoading && <p>Loading…</p>}
+        {isLoading && !data && <p>Loading…</p>}
         {isError && <p>Something went wrong.</p>}
-        {!isLoading && <NoteList notes={notes} />}
+        {!!data && <NoteList notes={notes} />}
 
         {hasResults && totalPages > 1 && (
           <Pagination

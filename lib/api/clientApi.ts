@@ -2,7 +2,7 @@ import { User } from "@/types/user";
 import { nextServer } from "./api";
 import { NewNoteData, Note } from "@/types/note";
 
-interface NotesHttpResponse {
+export interface NotesHttpResponse {
   notes: Note[];
   totalPages: number;
 }
