@@ -15,8 +15,6 @@ type NotesClientProps = {
   initialTag?: CategoryNoAll;
 };
 
-const PER_PAGE = 8;
-
 export default function NotesClient({
   initialData,
   initialTag,

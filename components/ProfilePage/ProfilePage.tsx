@@ -17,7 +17,7 @@ export default function ProfilePage() {
     );
   }
 
-  const { username, email, avatarUrl } = user as User;
+  const { username, email } = user as User;
 
   return (
     <section className={css.wrapper}>
