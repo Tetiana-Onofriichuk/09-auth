@@ -1,30 +1,32 @@
 "use client";
-
 import css from "./NoteForm.module.css";
-import * as Yup from "yup";
+import { useId, useState } from "react";
+import { useNoteDraftStore } from "@/lib/store/noteStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote, getCategories, Tags } from "@/lib/api/clientApi";
+import * as Yup from "yup";
 import toast from "react-hot-toast";
+
+import { NewNoteData } from "@/types/note";
 import { useRouter } from "next/navigation";
-import { NewNoteData, useNoteDraftStore } from "@/lib/store/noteStore";
-import Form from "next/form";
-import { useEffect, useState } from "react";
-import { Routes } from "@/types/note";
+import { createNote } from "@/lib/api/clientApi";
 
-export default function NoteForm() {
+const NoteFormSchema = Yup.object().shape({
+  title: Yup.string()
+    .min(3, "Title must be at least 3 characters")
+    .max(50, "Title must be at most 50 characters")
+    .required("Title is required"),
+  content: Yup.string().max(500, "Content must be at most 500 characters"),
+  tag: Yup.string()
+    .oneOf(["Work", "Personal", "Meeting", "Shopping", "Todo"], "Invalid tag")
+    .required("Tag is required"),
+});
+
+export function NoteForm() {
+  const fieldId = useId();
+  const queryClient = useQueryClient();
   const router = useRouter();
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const { draft, setDraft, clearDraft } = useNoteDraftStore();
-  const [categories, setCategories] = useState<Tags>(Tags);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const data = await getCategories();
-      setCategories(data);
-    };
-    fetchCategories();
-  }, []);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (
     event: React.ChangeEvent<
@@ -36,128 +38,96 @@ export default function NoteForm() {
       [event.target.name]: event.target.value,
     });
   };
-
-  const onCancel = () => {
-    router.push(Routes.NotesFilter + "All");
-  };
-
-  const formScheme = Yup.object().shape({
-    title: Yup.string()
-      .min(3, "Title must be at least 3 characters")
-      .max(50, "Title must be less or equal to 50 characters")
-      .required("Title is required"),
-    content: Yup.string()
-      .max(500, "Content must be less or equal to 500 characters")
-      .default(""),
-    tag: Yup.string().oneOf(categories).default("Todo"),
-  });
-
-  const queryClient = useQueryClient();
-
   const { mutate } = useMutation({
     mutationFn: createNote,
-    onSuccess: () => {
-      clearDraft();
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      router.push(Routes.NotesFilter + "All");
-      toast.success("Note has been successfully created!");
+      toast.success(`Note "${data.title}" created.`);
+      clearDraft();
+      router.back();
     },
     onError: () => {
-      toast.error("Error occured while creating note!");
-    },
-    onSettled: () => {
-      setIsLoading(false);
+      toast.error(`Failed to create note.`);
     },
   });
 
-  const onFormSubmit = async (formData: FormData) => {
-    setIsLoading(true);
+  const handleSubmit = async (formData: FormData) => {
+    const values = Object.fromEntries(formData) as unknown as NewNoteData;
     try {
-      const values = Object.fromEntries(formData) as unknown as NewNoteData;
-      const validatedValues = await formScheme.validate(values, {
-        abortEarly: false,
-      });
+      await NoteFormSchema.validate(values, { abortEarly: false });
       setErrors({});
-      mutate(validatedValues);
-    } catch (errors) {
-      if (errors instanceof Yup.ValidationError) {
-        const newErrors: Record<string, string> = {};
-        errors.inner.forEach((error) => {
-          if (error.path) newErrors[error.path] = error.message;
+      mutate(values);
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const validationErrors: Record<string, string> = {};
+        err.inner.forEach((e) => {
+          if (e.path) validationErrors[e.path] = e.message;
         });
-        setErrors(newErrors);
+        setErrors(validationErrors);
       }
-      setIsLoading(false);
     }
   };
 
-  return (
-    <Form action={onFormSubmit} className={css.form}>
-      {/* Примітивний індикатор завантаження */}
-      {isLoading && <div className={css.loader}>Loading…</div>}
+  const handleCancel = () => router.back();
 
+  return (
+    <form className={css.form} action={handleSubmit}>
       <div className={css.formGroup}>
-        <label htmlFor="title">Title</label>
+        <label htmlFor={`${fieldId}-title`}>Title</label>
         <input
+          id={`${fieldId}-title`}
           type="text"
           name="title"
-          id="title"
-          defaultValue={draft.title}
-          onChange={handleChange}
           className={css.input}
-          disabled={isLoading}
+          defaultValue={draft?.title}
+          onChange={handleChange}
         />
-        {errors?.title && <span className={css.error}>{errors.title}</span>}
+        {errors.title && <span className={css.error}>{errors.title}</span>}
       </div>
 
       <div className={css.formGroup}>
-        <label htmlFor="content">Content</label>
+        <label htmlFor={`${fieldId}-content`}>Content</label>
         <textarea
+          id={`${fieldId}-content`}
           name="content"
-          id="content"
           rows={8}
-          defaultValue={draft.content}
-          onChange={handleChange}
           className={css.textarea}
-          disabled={isLoading}
+          defaultValue={draft?.content}
+          onChange={handleChange}
         />
-        {errors?.content && <span className={css.error}>{errors.content}</span>}
+        {errors.content && <span className={css.error}>{errors.content}</span>}
       </div>
 
       <div className={css.formGroup}>
-        <label htmlFor="tag">Tag</label>
+        <label htmlFor={`${fieldId}-tag`}>Tag</label>
         <select
+          id={`${fieldId}-tag`}
           name="tag"
-          id="tag"
-          className={css.select}
-          value={draft.tag}
+          defaultValue={draft?.tag}
           onChange={handleChange}
-          disabled={isLoading}
+          className={css.select}
         >
-          {categories
-            .filter((tag) => tag !== "All")
-            .map((tag) => (
-              <option key={tag} value={tag}>
-                {tag}
-              </option>
-            ))}
+          <option value="Todo">Todo</option>
+          <option value="Work">Work</option>
+          <option value="Personal">Personal</option>
+          <option value="Meeting">Meeting</option>
+          <option value="Shopping">Shopping</option>
         </select>
-        {errors?.tag && <span className={css.error}>{errors.tag}</span>}
+        {errors.tag && <span className={css.error}>{errors.tag}</span>}
       </div>
 
       <div className={css.actions}>
         <button
+          onClick={handleCancel}
           type="button"
           className={css.cancelButton}
-          onClick={onCancel}
-          disabled={isLoading}
         >
           Cancel
         </button>
-        <button type="submit" className={css.submitButton} disabled={isLoading}>
-          {isLoading ? "Creating…" : "Create note"}
+        <button type="submit" className={css.submitButton}>
+          Create note
         </button>
       </div>
-    </Form>
+    </form>
   );
 }
