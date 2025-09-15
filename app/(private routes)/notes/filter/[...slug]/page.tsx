@@ -1,5 +1,5 @@
 import NotesClient from "../[...slug]/Notes.client";
-import { fetchNotes } from "@/lib/api/clientApi";
+import { fetchNotes } from "@/lib/api/serverApi";
 import type { Metadata } from "next";
 import type { CategoryNoAll } from "@/types/note";
 
