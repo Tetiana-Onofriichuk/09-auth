@@ -11,7 +11,7 @@ import Loading from "@/app/loading";
 import NoteList from "@/components/NoteList/NoteList";
 import { fetchNotes } from "@/lib/api/clientApi";
 import { Note } from "@/types/note";
-import css from "./NotesPage.module.css";
+import css from "./Notesclient.module.css";
 
 interface NotesClientProps {
   initialData: { notes: Note[]; totalPages: number };
