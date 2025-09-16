@@ -11,7 +11,7 @@ import Loading from "@/app/loading";
 import NoteList from "@/components/NoteList/NoteList";
 import { fetchNotes } from "@/lib/api/clientApi";
 import { Note } from "@/types/note";
-import css from "./NotesPage.module.css";
+import css from "./Notesclient.module.css";
 
 interface NotesClientProps {
   initialData: { notes: Note[]; totalPages: number };
@@ -24,7 +24,7 @@ export default function NotesClient({
 }: NotesClientProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [query, setQuery] = useState("");
-  const [debouncedQuery] = useDebounce(query, 500); // 300–500 мс обычно комфортнее
+  const [debouncedQuery] = useDebounce(query, 500);
   const [tag, setTag] = useState(initialTag);
 
   useEffect(() => {
