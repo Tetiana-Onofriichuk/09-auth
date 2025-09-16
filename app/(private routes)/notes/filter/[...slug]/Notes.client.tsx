@@ -1,85 +1,83 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useDebounce } from "use-debounce";
+import { Toaster } from "react-hot-toast";
 import Link from "next/link";
-import css from "./Notesclient.module.css";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchNotes, type NotesHttpResponse } from "@/lib/api/clientApi";
-import NoteList from "@/components/NoteList/NoteList";
-import Pagination from "@/components/Pagination/Pagination";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import SearchBox from "@/components/SearchBox/SearchBox";
-import { type CategoryNoAll } from "@/types/note";
+import Pagination from "@/components/Pagination/Pagination";
+import Loading from "@/app/loading";
+import NoteList from "@/components/NoteList/NoteList";
+import { fetchNotes } from "@/lib/api/clientApi";
+import { Note } from "@/types/note";
+import css from "./NotesPage.module.css";
 
-type NotesClientProps = {
-  initialData: NotesHttpResponse;
-  initialTag?: CategoryNoAll;
-};
+interface NotesClientProps {
+  initialData: { notes: Note[]; totalPages: number };
+  initialTag: string | undefined;
+}
 
 export default function NotesClient({
   initialData,
   initialTag,
 }: NotesClientProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
-  const [tag, setTag] = useState<CategoryNoAll | undefined>(initialTag);
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setSearch(searchInput.trim());
-      setCurrentPage(1);
-    }, 500);
-    return () => clearTimeout(t);
-  }, [searchInput, initialTag]);
+  const [query, setQuery] = useState("");
+  const [debouncedQuery] = useDebounce(query, 500); // 300–500 мс обычно комфортнее
+  const [tag, setTag] = useState(initialTag);
 
   useEffect(() => {
     setTag(initialTag);
     setCurrentPage(1);
   }, [initialTag]);
 
-  const { data, isLoading, isError, isFetching } = useQuery({
-    queryKey: ["notes", search, currentPage, tag ?? null],
-    queryFn: () => fetchNotes(search, currentPage, tag),
+  const handleChange = useCallback((v: string) => {
+    setQuery(v);
+    setCurrentPage(1);
+  }, []);
+
+  const { data, isError, isLoading, isSuccess, isFetching } = useQuery({
+    queryKey: ["notes", debouncedQuery, currentPage, tag],
+    queryFn: () => fetchNotes(debouncedQuery, currentPage, tag),
     placeholderData: keepPreviousData,
     initialData,
     refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    staleTime: 30_000,
   });
 
-  const notes = data?.notes ?? [];
-  const totalPages = data?.totalPages ?? 1;
-  const hasResults = notes.length > 0;
+  const totalPages = data?.totalPages ?? 0;
 
   return (
     <div className={css.app}>
-      <header className={css.toolbar}>
-        <SearchBox onSearch={setSearchInput} />
-        <Link
-          href="/notes/action/create"
-          className={css.button}
-          aria-label="Create a new note"
-        >
-          Create note +
-        </Link>
-      </header>
-
-      <main className="notes-list">
-        {isLoading && !data && <p>Loading…</p>}
-        {isError && <p>Something went wrong.</p>}
-        {!!data && <NoteList notes={notes} />}
-
-        {hasResults && totalPages > 1 && (
+      <div className={css.toolbar}>
+        <SearchBox value={query} onChange={handleChange} />
+        {isSuccess && totalPages > 1 && (
           <Pagination
-            pageCount={totalPages}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
+            page={currentPage}
+            total={totalPages}
+            onChange={setCurrentPage}
           />
         )}
+        <Link href="/notes/action/create" className={css.button}>
+          Create note +
+        </Link>
+      </div>
 
-        {isFetching && !isLoading && <p>Updating…</p>}
-      </main>
+      {isLoading && !data?.notes && <Loading />}
+      {isError && <ErrorMessage />}
+
+      {isSuccess && (data?.notes?.length ?? 0) > 0 && (
+        <div className={css.noteListWrapper}>
+          <NoteList notes={data!.notes} />
+          {isFetching && !isLoading && (
+            <div className={css.overlayLoader}>
+              <Loading />
+            </div>
+          )}
+        </div>
+      )}
+
+      <Toaster position="top-right" />
     </div>
   );
 }
