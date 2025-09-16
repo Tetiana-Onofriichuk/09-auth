@@ -8,7 +8,7 @@ export interface Note {
 }
 
 export type NoteId = Note["id"];
-export type Tag = Note["tag"]; // існуючий тип
+export type Tag = Note["tag"];
 export type SortBy = "title" | "createdAt" | "updatedAt";
 
 export const CATEGORIES = [
@@ -23,13 +23,12 @@ export const CATEGORIES = [
 export type Category = (typeof CATEGORIES)[number];
 export type CategoryNoAll = Exclude<Category, "All">;
 
-// ✅ додай визначення NoteTag
 export type NoteTag = Tag;
 
 export interface NewNoteData {
   title: string;
   content?: string;
-  tag: NoteTag; // тепер тип існує
+  tag: NoteTag;
 }
 
 export const enum Routes {

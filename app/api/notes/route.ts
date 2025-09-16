@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       params: {
         ...(search !== "" && { search }),
         page,
-        perPage: 12,
+        perPage: 8,
         ...(tag && { tag }),
       },
       headers: {
