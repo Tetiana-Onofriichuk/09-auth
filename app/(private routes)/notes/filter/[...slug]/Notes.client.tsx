@@ -11,7 +11,7 @@ import Loading from "@/app/loading";
 import NoteList from "@/components/NoteList/NoteList";
 import { fetchNotes } from "@/lib/api/clientApi";
 import { Note } from "@/types/note";
-import css from "./Notesclient.module.css";
+import css from "./NotesPage.module.css";
 
 interface NotesClientProps {
   initialData: { notes: Note[]; totalPages: number };
@@ -32,11 +32,6 @@ export default function NotesClient({
     setCurrentPage(1);
   }, [initialTag]);
 
-  const handleChange = useCallback((v: string) => {
-    setQuery(v);
-    setCurrentPage(1);
-  }, []);
-
   const { data, isError, isLoading, isSuccess, isFetching } = useQuery({
     queryKey: ["notes", debouncedQuery, currentPage, tag],
     queryFn: () => fetchNotes(debouncedQuery, currentPage, tag),
@@ -47,17 +42,15 @@ export default function NotesClient({
 
   const totalPages = data?.totalPages ?? 0;
 
+  const handleChange = useCallback((val: string) => {
+    setQuery(val);
+    setCurrentPage(1);
+  }, []);
+
   return (
     <div className={css.app}>
       <div className={css.toolbar}>
         <SearchBox value={query} onChange={handleChange} />
-        {isSuccess && totalPages > 1 && (
-          <Pagination
-            page={currentPage}
-            total={totalPages}
-            onChange={setCurrentPage}
-          />
-        )}
         <Link href="/notes/action/create" className={css.button}>
           Create note +
         </Link>
@@ -66,14 +59,25 @@ export default function NotesClient({
       {isLoading && !data?.notes && <Loading />}
       {isError && <ErrorMessage />}
 
-      {isSuccess && (data?.notes?.length ?? 0) > 0 && (
+      {isSuccess && data?.notes.length > 0 && (
         <div className={css.noteListWrapper}>
-          <NoteList notes={data!.notes} />
+          <NoteList notes={data.notes} />
+
           {isFetching && !isLoading && (
             <div className={css.overlayLoader}>
               <Loading />
             </div>
           )}
+        </div>
+      )}
+
+      {isSuccess && totalPages > 1 && (
+        <div className={css.paginationWrapper}>
+          <Pagination
+            page={currentPage}
+            total={totalPages}
+            onChange={setCurrentPage}
+          />
         </div>
       )}
 

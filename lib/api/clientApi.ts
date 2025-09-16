@@ -60,7 +60,7 @@ export const fetchNotes = async (
     ...(search && { search }),
     tag,
     page,
-    perPage: 12,
+    perPage: 8,
   };
 
   const response = await nextServer.get<NotesHttpResponse>("/notes", {
