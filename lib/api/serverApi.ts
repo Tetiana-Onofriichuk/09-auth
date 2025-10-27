@@ -1,27 +1,36 @@
+// src/lib/server.ts
 import { cookies } from "next/headers";
-import { nextServer } from "./api";
+import { backend } from "./api";
 import { Note } from "@/types/note";
 import { User } from "@/types/user";
 
-export const checkServerSession = async () => {
-  const cookieStore = await cookies();
-  const res = await nextServer.get("/auth/session", {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-  });
+type CheckSessionResponse = { success: boolean };
 
-  return res;
+const cookieHeader = () => {
+  const jar = cookies();
+  const str = jar.toString();
+  return str ? { Cookie: str } : {};
+};
+
+export const checkServerSession = async (): Promise<boolean> => {
+  try {
+    const res = await backend.get<CheckSessionResponse>("/auth/session", {
+      headers: cookieHeader(),
+    });
+    return res.status === 200 && res.data?.success === true;
+  } catch {
+    return false;
+  }
 };
 
 export const getServerMe = async (): Promise<User> => {
-  const cookieStore = await cookies();
-  const { data } = await nextServer.get("/users/me", {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
+  const res = await backend.get<User>("/users/me", {
+    headers: cookieHeader(),
   });
-  return data;
+  if (res.status !== 200) {
+    throw new Error("Unauthorized");
+  }
+  return res.data;
 };
 
 interface NotesHttpResponse {
@@ -34,28 +43,30 @@ export const fetchNotes = async (
   page: number,
   tag: string | undefined
 ): Promise<NotesHttpResponse> => {
-  const cookieStore = await cookies();
   const params = {
     ...(search && { search }),
     tag,
     page,
     perPage: 12,
   };
-  const headers = {
-    Cookie: cookieStore.toString(),
-  };
-  const response = await nextServer.get<NotesHttpResponse>("/notes", {
+
+  const res = await backend.get<NotesHttpResponse>("/notes", {
     params,
-    headers,
+    headers: cookieHeader(),
   });
-  return response.data;
+
+  if (res.status !== 200) {
+    throw new Error("Failed to load notes");
+  }
+  return res.data;
 };
 
 export const fetchNoteById = async (id: string): Promise<Note> => {
-  const cookieStore = await cookies();
-  const headers = {
-    Cookie: cookieStore.toString(),
-  };
-  const response = await nextServer.get<Note>(`/notes/${id}`, { headers });
-  return response.data;
+  const res = await backend.get<Note>(`/notes/${id}`, {
+    headers: cookieHeader(),
+  });
+  if (res.status !== 200) {
+    throw new Error("Note not found");
+  }
+  return res.data;
 };
