@@ -28,12 +28,15 @@ export async function POST(req: NextRequest) {
           cookieStore.set("accessToken", parsed.accessToken, options);
         if (parsed.refreshToken)
           cookieStore.set("refreshToken", parsed.refreshToken, options);
+        if (parsed.sessionId)
+          cookieStore.set("sessionId", parsed.sessionId, options);
       }
       return NextResponse.json(apiRes.data, { status: apiRes.status });
     }
 
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   } catch (error) {
+    //console.log(error)
     if (isAxiosError(error)) {
       logErrorResponse(error.response?.data);
       return NextResponse.json(
