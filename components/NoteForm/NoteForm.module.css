@@ -1,79 +1,93 @@
 .form {
+  /* Картка форми: ~70% екрана, але не менше 480 і не більше 880 */
+  width: clamp(480px, 70vw, 880px);
+  margin: 0 auto;
+
+  background-color: var(--header-bg);
+  color: var(--header-fg);
+  border: 1px solid color-mix(in oklab, var(--header-fg) 12%, transparent);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: clamp(16px, 2.5vw, 32px);
+
   display: flex;
   flex-direction: column;
   gap: 16px;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .formGroup {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  font-size: 14px;
-  font-weight: 500;
-  color: #212529;
-}
-
-.input,
-.textarea,
-.select {
-  margin-top: 4px;
-  padding: 8px 12px;
-  font-size: 14px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  resize: none;
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
   gap: 8px;
 }
 
-.submitButton {
-  padding: 8px 16px;
-  font-size: 16px;
-  background-color: orange;
-  color: #e2e6ea;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+.label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--header-fg);
 }
 
-.submitButton:hover {
-  background-color: black;
-  color: #e2e6ea;
+.input,
+.select,
+.textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 12px;
+  border-radius: 8px;
+
+  border: 1px solid color-mix(in oklab, var(--header-fg) 20%, transparent);
+  background-color: var(--background);
+  color: var(--foreground);
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    outline-color 0.2s ease;
+  box-sizing: border-box;
 }
 
-.submitButton:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
+.textarea {
+  min-height: 180px;
+  resize: vertical;
 }
 
-.cancelButton {
-  padding: 8px 16px;
-  font-size: 16px;
-  background-color: #6c757d;
-  color: #e2e6ea;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.cancelButton:hover {
-  background-color: #e2e6ea;
-  color: #212529;
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: 2px solid color-mix(in oklab, var(--header-fg) 50%, transparent);
+  outline-offset: 2px;
 }
 
 .error {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: 4px;
+  color: #ef4444;
+  font-size: 13px;
 }
 
-.loader {
-  margin-bottom: 12px;
-  font-size: 14px;
-  opacity: 0.8;
+.actions {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  justify-content: center; /* або flex-end */
+}
+
+@media (max-width: 640px) {
+  .form {
+    width: 100%;
+  } /* на мобільних — 100% ширини з внутр. паддінгом */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form,
+  .input,
+  .select,
+  .textarea {
+    transition: none;
+  }
 }

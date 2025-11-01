@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import TagsMenu from "../TagsMenu/TagsMenu";
 import css from "./AuthNavigation.module.css";
 import toast from "react-hot-toast";
+import Button from "@/components/Button/Button";
 
 const AuthNavigation = () => {
   const router = useRouter();
@@ -31,19 +32,22 @@ const AuthNavigation = () => {
           Profile
         </Link>
       </li>
+
       <li className={css.navigationItem}>
         <Link href={Routes.NoteCreate} className={css.navigationLink}>
           Create Note
         </Link>
       </li>
+
       <li className={css.navigationItem}>
         <TagsMenu />
       </li>
+
       <li className={css.navigationItem}>
-        <p className={css.userEmail}>{user?.email}</p>
-        <button className={css.logoutButton} onClick={handleLogout}>
+        <span className={css.userEmail}>{user?.email}</span>
+        <Button variant="secondary" onClick={handleLogout}>
           Logout
-        </button>
+        </Button>
       </li>
     </>
   ) : (

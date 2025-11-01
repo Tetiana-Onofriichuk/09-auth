@@ -1,38 +1,58 @@
 .userEmail {
-  color: white;
+  color: var(--header-fg);
   margin-right: 0.5rem;
   font-size: 0.9rem;
-}
-
-.logoutButton {
-  background: transparent;
-  border: 1px solid white;
-  color: white;
-  padding: 0.3rem 0.6rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
-}
-
-.logoutButton:hover {
-  background-color: white;
-  color: #333;
+  transition: color 0.2s ease;
 }
 
 .navigationItem {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .navigationLink {
-  text-decoration: none;
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--btn-h, 40px);
+  padding: 0 12px;
+  border-radius: var(--btn-radius, 8px);
+
+  color: var(--header-fg);
   font-size: 1rem;
+  text-decoration: none;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    outline-color 0.2s ease;
 }
 
-.navigationLink:hover {
-  color: #ddd;
+.navigationLink:hover,
+.navigationLink:focus-visible {
+  background-color: var(--background);
+  color: #000;
+  outline: none;
+}
+
+:global(:root[data-theme="dark"]) .navigationLink:hover,
+:global(:root[data-theme="dark"]) .navigationLink:focus-visible {
+  color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navigationLink,
+  .userEmail {
+    transition: none;
+  }
+}
+
+.navigationLink[aria-current="page"] {
+  background-color: var(--background);
+  color: #000;
+}
+:global(:root[data-theme="dark"]) .navigationLink[aria-current="page"] {
+  color: var(--foreground);
 }

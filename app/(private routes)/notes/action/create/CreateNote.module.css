@@ -1,18 +1,21 @@
 .main {
-  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 0;
 }
 
 .container {
-  width: 90%;
-  max-width: 1280px;
-  margin: 0px auto;
-  padding: 0 16px 16px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
 }
 
 .title {
-  font-size: 36px;
+  margin: 0 auto 16px;
+  width: clamp(340px, 70vw, 880px);
+  font-size: clamp(24px, 3.2vw, 32px);
   font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 60px;
+  color: var(--foreground);
   text-align: center;
 }

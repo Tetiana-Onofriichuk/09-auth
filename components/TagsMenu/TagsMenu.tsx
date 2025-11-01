@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CATEGORIES } from "@/types/note";
 import css from "./TagsMenu.module.css";
+import Button from "@/components/Button/Button"; // ⬅️ додаємо
 
 export default function TagsMenu() {
   const [open, setOpen] = useState(false);
@@ -29,16 +30,17 @@ export default function TagsMenu() {
 
   return (
     <div className={css.menuContainer}>
-      <button
+      <Button
         ref={btnRef}
         type="button"
-        className={css.menuButton}
+        variant="secondary"
+        withCaret
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
         Notes ▾
-      </button>
+      </Button>
 
       {open && (
         <ul ref={listRef} className={css.menuList} role="menu">
