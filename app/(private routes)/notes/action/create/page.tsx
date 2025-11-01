@@ -1,3 +1,4 @@
+// app/notes/action/create/page.tsx
 import { NoteForm } from "@/components/NoteForm/NoteForm";
 import css from "./CreateNote.module.css";
 import type { Metadata } from "next";
@@ -21,14 +22,14 @@ export const metadata: Metadata = {
     type: "article",
   },
 };
-const CreateNote = () => {
+
+export default function CreateNote() {
   return (
-    <main className={css.main}>
-      <div className={css.container}>
+    <main className={css.page}>
+      <section className={css.card}>
         <h1 className={css.title}>Create note</h1>
         <NoteForm />
-      </div>
+      </section>
     </main>
   );
-};
-export default CreateNote;
+}

@@ -66,71 +66,65 @@ export function NoteForm() {
   const handleCancel = () => router.back();
 
   return (
-    <main className={css.main}>
-      <div className={css.wrapper}>
-        <form className={css.form} action={handleSubmit}>
-          <div className={css.formGroup}>
-            <label htmlFor={`${fieldId}-title`} className={css.label}>
-              Title
-            </label>
-            <input
-              id={`${fieldId}-title`}
-              type="text"
-              name="title"
-              className={css.input}
-              defaultValue={draft?.title}
-              onChange={handleChange}
-            />
-            {errors.title && <span className={css.error}>{errors.title}</span>}
-          </div>
-
-          <div className={css.formGroup}>
-            <label htmlFor={`${fieldId}-content`} className={css.label}>
-              Content
-            </label>
-            <textarea
-              id={`${fieldId}-content`}
-              name="content"
-              rows={8}
-              className={css.textarea}
-              defaultValue={draft?.content}
-              onChange={handleChange}
-            />
-            {errors.content && (
-              <span className={css.error}>{errors.content}</span>
-            )}
-          </div>
-
-          <div className={css.formGroup}>
-            <label htmlFor={`${fieldId}-tag`} className={css.label}>
-              Tag
-            </label>
-            <select
-              id={`${fieldId}-tag`}
-              name="tag"
-              defaultValue={draft?.tag}
-              onChange={handleChange}
-              className={css.select}
-            >
-              <option value="Todo">Todo</option>
-              <option value="Work">Work</option>
-              <option value="Personal">Personal</option>
-              <option value="Meeting">Meeting</option>
-              <option value="Shopping">Shopping</option>
-            </select>
-            {errors.tag && <span className={css.error}>{errors.tag}</span>}
-          </div>
-
-          <div className={css.actions}>
-            <Button type="submit" variant="secondary">
-              Create note
-            </Button>
-            <Button type="button" variant="secondary" onClick={handleCancel}>
-              Cancel
-            </Button>
-          </div>
-        </form>
+    <form className={css.form} action={handleSubmit}>
+      <div className={css.formGroup}>
+        <label htmlFor={`${fieldId}-title`} className={css.label}>
+          Title
+        </label>
+        <input
+          id={`${fieldId}-title`}
+          type="text"
+          name="title"
+          className={css.input}
+          defaultValue={draft?.title}
+          onChange={handleChange}
+        />
+        {errors.title && <span className={css.error}>{errors.title}</span>}
       </div>
-    </main>
+
+      <div className={css.formGroup}>
+        <label htmlFor={`${fieldId}-content`} className={css.label}>
+          Content
+        </label>
+        <textarea
+          id={`${fieldId}-content`}
+          name="content"
+          rows={8}
+          className={css.textarea}
+          defaultValue={draft?.content}
+          onChange={handleChange}
+        />
+        {errors.content && <span className={css.error}>{errors.content}</span>}
+      </div>
+
+      <div className={css.formGroup}>
+        <label htmlFor={`${fieldId}-tag`} className={css.label}>
+          Tag
+        </label>
+        <select
+          id={`${fieldId}-tag`}
+          name="tag"
+          defaultValue={draft?.tag}
+          onChange={handleChange}
+          className={css.select}
+        >
+          <option value="Todo">Todo</option>
+          <option value="Work">Work</option>
+          <option value="Personal">Personal</option>
+          <option value="Meeting">Meeting</option>
+          <option value="Shopping">Shopping</option>
+        </select>
+        {errors.tag && <span className={css.error}>{errors.tag}</span>}
+      </div>
+
+      <div className={css.actions}>
+        <Button type="submit" variant="secondary">
+          Create note
+        </Button>
+        <Button type="button" variant="secondary" onClick={handleCancel}>
+          Cancel
+        </Button>
+      </div>
+    </form>
   );
 }

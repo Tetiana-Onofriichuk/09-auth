@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import css from "./SignUp.module.css";
-import { register, RegisterRequest } from "@/lib/api/clientApi";
+import { register, type RegisterRequest } from "@/lib/api/clientApi";
 import { ApiError } from "@/app/api/api";
 import { useAuthStore } from "@/lib/store/authStore";
+import Button from "@/components/Button/Button";
 
 export default function SignUp() {
   const router = useRouter();
@@ -13,10 +14,11 @@ export default function SignUp() {
   const setUser = useAuthStore((state) => state.setUser);
 
   const handleSubmit = async (formData: FormData) => {
+    setError("");
     try {
       const formValues: RegisterRequest = {
-        email: formData.get("email") as string,
-        password: formData.get("password") as string,
+        email: String(formData.get("email") ?? ""),
+        password: String(formData.get("password") ?? ""),
       };
 
       const res = await register(formValues);
@@ -26,11 +28,10 @@ export default function SignUp() {
       } else {
         setError("Invalid email or password");
       }
-    } catch (error) {
+    } catch (e) {
+      const err = e as ApiError;
       setError(
-        (error as ApiError).response?.data?.error ??
-          (error as ApiError).message ??
-          "Oops... some error"
+        err.response?.data?.error ?? err.message ?? "Oops... some error"
       );
     }
   };
@@ -38,6 +39,7 @@ export default function SignUp() {
   return (
     <main className={css.mainContent}>
       <h1 className={css.formTitle}>Sign up</h1>
+
       <form className={css.form} action={handleSubmit}>
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
@@ -62,9 +64,9 @@ export default function SignUp() {
         </div>
 
         <div className={css.actions}>
-          <button type="submit" className={css.submitButton}>
+          <Button type="submit" variant="primary">
             Register
-          </button>
+          </Button>
         </div>
 
         {error && <p className={css.error}>{error}</p>}

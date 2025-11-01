@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import css from "./SignIn.module.css";
 import toast from "react-hot-toast";
+import Button from "@/components/Button/Button";
 
 const SignIn = () => {
   const router = useRouter();
@@ -67,9 +68,9 @@ const SignIn = () => {
         </div>
 
         <div className={css.actions}>
-          <button type="submit" className={css.submitButton}>
+          <Button type="submit" variant="primary">
             Log in
-          </button>
+          </Button>
         </div>
 
         {error && <p className={css.error}>{error}</p>}

@@ -50,7 +50,9 @@ export default function NotesClient({
   return (
     <div className={css.app}>
       <div className={css.toolbar}>
-        <SearchBox value={query} onChange={handleChange} />
+        <div className={css.searchWrap}>
+          <SearchBox value={query} onChange={handleChange} />
+        </div>
         <Link href="/notes/action/create" className={css.button}>
           Create note +
         </Link>

@@ -5,15 +5,26 @@ import css from "./NoteList.module.css";
 import type { Note, NoteId } from "@/types/note";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteNote } from "@/lib/api/clientApi";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import Button from "@/components/Button/Button";
+import { useRouter } from "next/navigation";
 
 interface NoteListProps {
   notes: Note[];
 }
 
+const getNoteId = (n: Note): NoteId => {
+  if (n.id) return n.id;
+  if (n._id) return n._id;
+  throw new Error("Note is missing id/_id");
+};
+
 export default function NoteList({ notes }: NoteListProps) {
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<NoteId | null>(null);
+  const router = useRouter();
+
+  const list = useMemo(() => notes ?? [], [notes]);
 
   const { mutate: deleteMutation } = useMutation({
     mutationFn: (id: NoteId) => deleteNote(id),
@@ -27,40 +38,58 @@ export default function NoteList({ notes }: NoteListProps) {
     },
   });
 
-  if (!notes || notes.length === 0) {
+  if (!list.length) {
     return <p className={css.empty}>No notes found.</p>;
   }
 
   return (
     <ul className={css.list}>
-      {notes.map((note) => (
-        <li className={css.listItem} key={note.id}>
-          <h2 className={css.title}>{note.title}</h2>
-          <p className={css.content}>{note.content}</p>
-          <div className={css.footer}>
-            <span className={css.tag}>{note.tag || "No tag"}</span>
+      {list.map((note, idx) => {
+        const id = getNoteId(note);
+        return (
+          <li
+            className={css.card}
+            key={id}
+            style={{ animationDelay: `${(idx + 1) * 0.05}s` }}
+          >
+            <div className={css.header}>
+              <Link
+                href={`/notes/${id}`}
+                className={css.titleLink}
+                aria-label={`Open note ${note.title}`}
+              >
+                <h2 className={css.title}>{note.title}</h2>
+              </Link>
+              <span className={css.tag}>{note.tag || "No tag"}</span>
+            </div>
 
-            <Link
-              href={`/notes/${note.id}`}
-              className={css.link}
-              aria-label={`View details of note ${note.title}`}
-            >
-              View details
-            </Link>
+            <p className={css.content}>{note.content || "—"}</p>
 
-            <button
-              className={css.button}
-              onClick={() => {
-                setDeletingId(note.id);
-                deleteMutation(note.id);
-              }}
-              disabled={deletingId === note.id}
-            >
-              {deletingId === note.id ? "Deleting..." : "Delete"}
-            </button>
-          </div>
-        </li>
-      ))}
+            <div className={css.footer}>
+              <div className={css.actions}>
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={() => router.push(`/notes/${id}`)}
+                >
+                  View
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setDeletingId(id);
+                    deleteMutation(id);
+                  }}
+                  disabled={deletingId === id}
+                >
+                  {deletingId === id ? "Deleting..." : "Delete"}
+                </Button>
+              </div>
+            </div>
+          </li>
+        );
+      })}
     </ul>
   );
 }

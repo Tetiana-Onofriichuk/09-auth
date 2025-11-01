@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { ApiError } from "@/app/api/api";
 import { User } from "@/types/user";
 import { useAuthStore } from "@/lib/store/authStore";
-import Button from "@/components/Button/Button"; // ⬅️ додаємо
+import Button from "@/components/Button/Button";
 
 export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
@@ -47,7 +47,12 @@ export default function Profile() {
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
-        <h1 className={css.formTitle}>Edit Profile</h1>
+        <div className={css.headerRow}>
+          <h1 className={css.formTitle}>Edit Profile</h1>
+          <Button type="button" variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+        </div>
 
         <div className={css.avatarWrapper}>
           <Image
